@@ -66,7 +66,7 @@ const isDockerRunning = () => {
  * @return {Array} The array of containers as { name, status }
  */
 const getContainers = () => {
-    const [res, out, err, status] = GLib.spawn_command_line_sync("docker ps -a --format '{{.Names}},{{.Status}}'");
+    const [res, out, err, status] = GLib.spawn_command_line_sync("docker ps -a --format '{{.Names}},{{.Status}},{{.Ports}}'");
     if (status !== 0)
         throw new Error("Error occurred when fetching containers");
 
@@ -76,7 +76,8 @@ const getContainers = () => {
             const values = string.split(',');
             return {
                 name: values[0],
-                status: values[1]
+                status: values[1],
+                port:values[2]
             };
         });
 };

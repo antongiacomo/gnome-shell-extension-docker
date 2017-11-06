@@ -17,7 +17,7 @@
  */
 
 'use strict';
-
+const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
@@ -54,7 +54,9 @@ const DockerSubMenuMenuItem = new Lang.Class({
     Name: 'DockerMenu.DockerSubMenuMenuItem',
     Extends: PopupMenu.PopupSubMenuMenuItem,
 
-    _init: function (containerName, containerStatusMessage) {
+    _init: function (containerName, containerStatusMessage, containerPort) {
+    	this.parent(containerName);
+        this.containerPort=containerPort;
         this.parent(containerName);
 
         switch (getStatus(containerStatusMessage)) {
@@ -76,5 +78,27 @@ const DockerSubMenuMenuItem = new Lang.Class({
                 this.actor.insert_child_at_index(createIcon('action-unavailable-symbolic', 'status-undefined'), 1);
                 break;
         }
-    }
+
+        var portItem = new PopupMenu.PopupMenuItem(getPort(containerPort)[1])
+        this.menu.addMenuItem(portItem);
+        portItem.actor.connect('button_press_event', Lang.bind(this, this._portClick));
+    },
+    _portClick: function (portItem) {
+      log("ciao"+ getPort(this.containerPort)[0]);
+      Gio.app_info_launch_default_for_uri("http://"+
+        getPort(this.containerPort)[0],
+        global.create_app_launch_context(global.display.get_current_time_roundtrip().timestamp,-1)
+        );
+  }
+
 });
+var getPort = (port) => {
+    if(port.length == 0)
+        return "No Ports exposed";
+    else{
+        var values = port.split('->');
+        return values;
+    }
+
+    
+};
