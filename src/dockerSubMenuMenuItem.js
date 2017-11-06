@@ -24,7 +24,7 @@ const PopupMenu = imports.ui.popupMenu;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const DockerMenuItem = Me.imports.src.dockerMenuItem;
-
+const PortMenuItem = Me.imports.src.portMenuItem;
 /**
  * Create a St.Icon
  * @param {String} name The name of the icon 
@@ -56,8 +56,6 @@ const DockerSubMenuMenuItem = new Lang.Class({
 
     _init: function (containerName, containerStatusMessage, containerPort) {
     	this.parent(containerName);
-        this.containerPort=containerPort;
-        this.parent(containerName);
 
         switch (getStatus(containerStatusMessage)) {
             case "stopped":
@@ -77,28 +75,14 @@ const DockerSubMenuMenuItem = new Lang.Class({
             default:
                 this.actor.insert_child_at_index(createIcon('action-unavailable-symbolic', 'status-undefined'), 1);
                 break;
-        }
+        };
 
-        var portItem = new PopupMenu.PopupMenuItem(getPort(containerPort)[1])
-        this.menu.addMenuItem(portItem);
-        portItem.actor.connect('button_press_event', Lang.bind(this, this._portClick));
-    },
-    _portClick: function (portItem) {
-      log("ciao"+ getPort(this.containerPort)[0]);
-      Gio.app_info_launch_default_for_uri("http://"+
-        getPort(this.containerPort)[0],
-        global.create_app_launch_context(global.display.get_current_time_roundtrip().timestamp,-1)
-        );
-  }
+      
+
+        this.menu.addMenuItem(new PortMenuItem.PortMenuItem(containerPort));
+      
+    }
+   
+  
 
 });
-var getPort = (port) => {
-    if(port.length == 0)
-        return "No Ports exposed";
-    else{
-        var values = port.split('->');
-        return values;
-    }
-
-    
-};
